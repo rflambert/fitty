@@ -1,6 +1,6 @@
 /*
  * fitty v2.3.3 - Snugly resizes text to fit its parent container
- * Copyright (c) 2020 Rik Schennink <rik@pqina.nl> (https://pqina.nl/)
+ * Copyright (c) 2021 Rik Schennink <rik@pqina.nl> (https://pqina.nl/)
  */
 'use strict';
 
@@ -92,14 +92,21 @@ exports.default = function (w) {
     // get available width from parent node
     f.availableWidth = f.element.parentNode.clientWidth;
 
-    // the space our target element uses
+    // get available height from parent node
+    f.availableHeight = f.element.parentNode.clientHeight;
+
+    // the width our target element uses
     f.currentWidth = f.element.scrollWidth;
+
+    // the height our target element uses
+    f.currentHeight = f.element.scrollHeight;
 
     // remember current font size
     f.previousFontSize = f.currentFontSize;
 
-    // let's calculate the new font size
-    f.currentFontSize = Math.min(Math.max(f.minSize, f.availableWidth / f.currentWidth * f.previousFontSize), f.maxSize);
+    // let's calculate the new font size taking into account the width and
+    // the height
+    f.currentFontSize = Math.min(Math.min(Math.max(f.minSize, f.availableWidth / f.currentWidth * f.previousFontSize), f.maxSize), Math.min(Math.max(f.minSize, f.availableHeight / f.currentHeight * f.previousFontSize), f.maxSize));
 
     // if allows wrapping, only wrap when at minimum font size (otherwise would break container)
     f.whiteSpace = f.multiLine && f.currentFontSize === f.minSize ? 'normal' : 'nowrap';
@@ -107,7 +114,7 @@ exports.default = function (w) {
 
   // should always redraw if is not dirty layout, if is dirty layout, only redraw if size has changed
   var shouldRedraw = function shouldRedraw(f) {
-    return f.dirty !== DrawState.DIRTY_LAYOUT || f.dirty === DrawState.DIRTY_LAYOUT && f.element.parentNode.clientWidth !== f.availableWidth;
+    return f.dirty !== DrawState.DIRTY_LAYOUT || f.dirty === DrawState.DIRTY_LAYOUT && (f.element.parentNode.clientWidth !== f.availableWidth || f.element.parentNode.clientHeight !== f.availableHeight);
   };
 
   // every fitty element is tested for invalid styles
